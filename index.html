@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="es-AR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f2f4ef">
+<title>La Huerta — cosecha, pedidos y cobros</title>
+<link rel="stylesheet" href="css/estilo.css">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="iconos/icono-192.png">
+<link rel="apple-touch-icon" href="iconos/icono-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="La Huerta">
+</head>
+<body>
+
+<header class="tope">
+  <div class="tope-fila">
+    <span class="marca">LA<span>·</span>HUERTA</span>
+    <span class="rotulo tope-dato" id="dato-lista">sin lista cargada</span>
+  </div>
+  <nav class="pasos" aria-label="Pasos">
+    <button class="paso" data-vista="cargar" aria-current="true"><b>1</b><span>Lista</span></button>
+    <button class="paso" data-vista="revision" disabled><b>2</b><span>Revisar</span></button>
+    <button class="paso" data-vista="cosecha" disabled><b>3</b><span>Cosechar</span></button>
+    <button class="paso" data-vista="armado" disabled><b>4</b><span>Armar</span></button>
+    <button class="paso" data-vista="cobros" disabled><b>5</b><span>Cobrar</span></button>
+    <button class="paso" data-vista="deudas"><b>6</b><span>Me deben</span></button>
+  </nav>
+</header>
+
+<main>
+
+  <!-- 1. CARGAR -->
+  <section class="vista pila" id="vista-cargar">
+    <div class="soltar" id="zona">
+      <h2>Soltá el PDF de la lista</h2>
+      <p>El que exportás del Google Sheet de respuestas. También sirve el CSV.</p>
+      <button class="boton" id="btn-elegir">Elegir archivo</button>
+      <input type="file" id="archivo" accept=".pdf,.csv" hidden>
+    </div>
+    <p class="rotulo" id="estado-carga"></p>
+  </section>
+
+  <!-- 2. REVISION -->
+  <section class="vista pila" id="vista-revision" hidden>
+    <div class="cifras caja" id="cifras"></div>
+    <div id="alerta-revision"></div>
+    <div class="caja" id="caja-dudosas">
+      <div class="caja-tope"><h2>Para revisar</h2></div>
+      <div class="desliza"><table class="tabla" id="tabla-dudosas"></table></div>
+    </div>
+    <details class="caja">
+      <summary class="caja-tope">
+        <h2>Precios de la lista</h2>
+        <span class="rotulo">tocá un precio para corregirlo</span>
+      </summary>
+      <div class="desliza"><table class="tabla" id="tabla-precios"></table></div>
+    </details>
+    <button class="boton grande" id="btn-a-cosecha">Ver qué cosechar</button>
+  </section>
+
+  <!-- 3. COSECHAR -->
+  <section class="vista" id="vista-cosecha" hidden>
+    <article class="hoja">
+      <div class="hoja-tope">
+        <h2>Qué cosechar</h2>
+        <span class="rotulo" id="fecha-cosecha"></span>
+        <button class="boton" data-pdf>Guardar PDF</button>
+      </div>
+      <div class="hoja-cuerpo" id="hoja-cosecha"></div>
+      <div class="copiadero no-imprime">
+        <div class="copiadero-tope">
+          <span class="rotulo">Para mandar por WhatsApp</span>
+          <button class="boton fantasma" id="btn-copiar-cosecha">Copiar</button>
+        </div>
+        <pre id="texto-cosecha"></pre>
+      </div>
+      <details class="ajustes no-imprime">
+        <summary>Ajustes</summary>
+        <div class="ajustes-cuerpo">
+          <label for="margen">Cosechar de más, para descarte</label>
+          <input type="number" class="campo chico" id="margen" value="10" min="0" max="100" step="5">
+          <span class="rotulo">%</span>
+        </div>
+      </details>
+    </article>
+  </section>
+
+  <!-- 4. ARMAR -->
+  <section class="vista" id="vista-armado" hidden>
+    <article class="hoja">
+      <div class="hoja-tope">
+        <h2>Qué armar</h2>
+        <span class="rotulo no-imprime" id="avance-armado"></span>
+        <button class="boton" data-pdf>Guardar PDF</button>
+      </div>
+      <div class="hoja-cuerpo" id="hoja-armado"></div>
+      <details class="ajustes no-imprime">
+        <summary>Orden del recorrido</summary>
+        <div class="ajustes-cuerpo columna">
+          <p class="rotulo">El primero es el primero que entregás. El auto se carga al revés.</p>
+          <ol class="recorrido" id="recorrido"></ol>
+        </div>
+      </details>
+    </article>
+  </section>
+
+  <!-- 5. COBRAR -->
+  <section class="vista" id="vista-cobros" hidden>
+    <article class="hoja">
+      <div class="hoja-tope">
+        <h2>Qué cobrar</h2>
+        <span class="rotulo" id="resumen-cobros"></span>
+        <button class="boton fantasma" id="btn-balance">Balance</button>
+        <button class="boton" data-pdf>Guardar PDF</button>
+      </div>
+      <div id="aviso-alias" class="no-imprime"></div>
+      <div class="hoja-cuerpo" id="hoja-cobros"></div>
+      <div class="hoja-balance" id="hoja-balance"></div>
+      <details class="ajustes no-imprime">
+        <summary>Ajustes del mensaje</summary>
+        <div class="ajustes-cuerpo columna">
+          <label class="campo-largo"><span class="rotulo">Saludo</span>
+            <input type="text" id="pl-saludo"></label>
+          <label class="campo-largo"><span class="rotulo">Después del total</span>
+            <input type="text" id="pl-cierre"></label>
+          <label class="campo-largo"><span class="rotulo">Alias para transferir</span>
+            <input type="text" id="pl-alias"></label>
+          <div id="lista-alias"></div>
+          <button class="boton fantasma" id="btn-zip">Bajar todas como imagen</button>
+        </div>
+      </details>
+    </article>
+  </section>
+
+  <!-- 6. ME DEBEN -->
+  <section class="vista pila" id="vista-deudas" hidden>
+    <div class="caja">
+      <div class="caja-tope controles">
+        <h2>Quién me debe</h2>
+        <span class="rotulo" id="resumen-deudas"></span>
+        <button class="boton fantasma alfinal" id="btn-guardar-historial">Guardar esta lista</button>
+      </div>
+      <div class="caja-cuerpo" id="aviso-historial"></div>
+    </div>
+    <div id="listado-deudas"></div>
+
+    <details class="caja">
+      <summary class="caja-tope">
+        <h2>Respaldo</h2>
+        <span class="rotulo">para pasar de la compu al celular, o por las dudas</span>
+      </summary>
+      <div class="caja-cuerpo acciones-lote">
+        <button class="boton fantasma" id="btn-exportar">Bajar respaldo</button>
+        <button class="boton fantasma" id="btn-importar">Cargar respaldo</button>
+        <button class="boton fantasma" id="btn-xlsx">Informes en Excel</button>
+        <input type="file" id="archivo-respaldo" accept=".json" hidden>
+      </div>
+      <div class="caja-cuerpo" id="estado-respaldo"></div>
+    </details>
+  </section>
+
+</main>
+
+<script type="module" src="js/ui/app.js"></script>
+<script>
+  // El service worker solo sirve servido por http(s), no abriendo el archivo.
+  if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+    addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+  }
+</script>
+</body>
+</html>

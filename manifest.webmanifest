@@ -1,0 +1,18 @@
+{
+  "name": "La Huerta — cosecha, pedidos y cobros",
+  "short_name": "La Huerta",
+  "description": "Del PDF de la lista a los tres informes: qué cosechar, qué armar y qué cobrar.",
+  "lang": "es-AR",
+  "dir": "ltr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#f2f4ef",
+  "theme_color": "#1c2419",
+  "icons": [
+    { "src": "iconos/icono-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "iconos/icono-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "iconos/icono-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

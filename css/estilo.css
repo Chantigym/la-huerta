@@ -1,0 +1,623 @@
+/* La Huerta - planilla de campo.
+   Se usa en dos lugares: la compu para planificar y el celular al sol, en la
+   chacra, con las manos sucias. Por eso: contraste alto, blancos grandes para
+   tocar, numeros tabulares y nada que dependa de bajar una fuente. */
+
+:root {
+  --papel: #f2f4ef;
+  --papel-alto: #fbfcfa;
+  --tinta: #1c2419;
+  --tinta-suave: #5a6553;
+  --linea: #c9d2c2;
+  --linea-fuerte: #9aa892;
+
+  --verde: #2f7d3e;
+  --ambar: #b87514;
+  --rojo: #a32b22;
+  --resaltador: #fff3c4;
+
+  --mono: ui-monospace, "Cascadia Mono", "SF Mono", Menlo, Consolas, monospace;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  --toque: 48px;
+  --radio: 3px;
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--papel);
+  color: var(--tinta);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.45;
+}
+
+/* Los rotulos son sellos de remito: chicos, espaciados, en mayuscula. */
+.rotulo {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--tinta-suave);
+}
+
+.num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+h1, h2, h3 { font-weight: 650; line-height: 1.15; margin: 0; }
+h1 { font-size: 20px; letter-spacing: -0.01em; }
+h2 { font-size: 17px; }
+
+/* ---------- estructura ---------- */
+.tope {
+  position: sticky; top: 0; z-index: 20;
+  background: var(--papel-alto);
+  border-bottom: 1px solid var(--linea-fuerte);
+}
+.tope-fila {
+  max-width: 1100px; margin: 0 auto;
+  padding: 10px 16px;
+  display: flex; align-items: baseline; gap: 12px;
+}
+.marca { font-family: var(--mono); font-weight: 700; letter-spacing: 0.06em; }
+.marca span { color: var(--verde); }
+.tope-dato { margin-left: auto; }
+
+/* Los pasos son un recorrido real: cargar, revisar, cosechar. */
+.pasos { display: flex; max-width: 1100px; margin: 0 auto; padding: 0 8px 8px; gap: 4px; }
+.paso {
+  flex: 1; min-height: 40px;
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+  background: none; border: 0; border-bottom: 3px solid var(--linea);
+  font-family: var(--mono); font-size: 11.5px; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--tinta-suave);
+  cursor: pointer; padding: 4px 2px;
+}
+.paso:disabled { opacity: 0.38; cursor: not-allowed; }
+.paso[aria-current="true"] { color: var(--tinta); border-bottom-color: var(--verde); font-weight: 700; }
+.paso b {
+  font-variant-numeric: tabular-nums; font-weight: 700;
+  background: var(--linea); color: var(--tinta);
+  width: 19px; height: 19px; border-radius: 50%;
+  display: grid; place-items: center; font-size: 11px;
+}
+.paso[aria-current="true"] b { background: var(--verde); color: #fff; }
+
+main { max-width: 1100px; margin: 0 auto; padding: 20px 16px 80px; }
+.vista[hidden] { display: none; }
+.pila > * + * { margin-top: 18px; }
+
+/* ---------- cargar ---------- */
+.soltar {
+  border: 2px dashed var(--linea-fuerte);
+  border-radius: var(--radio);
+  background: var(--papel-alto);
+  padding: 44px 20px; text-align: center;
+}
+.soltar.encima { border-color: var(--verde); background: #eef5ec; }
+.soltar h2 { margin-bottom: 6px; }
+.soltar p { color: var(--tinta-suave); margin: 0 0 18px; font-size: 14.5px; }
+
+.boton {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: var(--toque); padding: 0 22px;
+  background: var(--tinta); color: var(--papel-alto);
+  border: 1px solid var(--tinta); border-radius: var(--radio);
+  font-family: var(--mono); font-size: 13px; letter-spacing: 0.06em;
+  text-transform: uppercase; font-weight: 600; cursor: pointer;
+}
+a.boton { text-decoration: none; }
+.boton:hover { background: #2c3a28; }
+.boton.fantasma { background: none; color: var(--tinta); border-color: var(--linea-fuerte); }
+.boton.fantasma:hover { background: #e7ebe3; }
+.boton:disabled { opacity: 0.4; cursor: not-allowed; }
+.boton.grande { width: 100%; }
+:focus-visible { outline: 3px solid var(--verde); outline-offset: 2px; }
+
+/* ---------- tarjetas y cifras ---------- */
+.caja {
+  background: var(--papel-alto);
+  border: 1px solid var(--linea);
+  border-radius: var(--radio);
+}
+.caja-tope {
+  padding: 12px 16px; border-bottom: 1px solid var(--linea);
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+}
+.caja-cuerpo { padding: 14px 16px; }
+
+.cifras { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1px; background: var(--linea); }
+.cifra { background: var(--papel-alto); padding: 14px 16px; }
+.cifra b { display: block; font-family: var(--mono); font-variant-numeric: tabular-nums;
+           font-size: 30px; font-weight: 600; line-height: 1; letter-spacing: -0.02em; }
+.cifra.alerta b { color: var(--ambar); }
+.cifra.mal b { color: var(--rojo); }
+
+/* ---------- revision: el semaforo ---------- */
+.aviso { display: flex; gap: 10px; padding: 12px 14px; border-radius: var(--radio);
+         border-left: 4px solid; font-size: 14.5px; }
+.aviso.ok { background: #eef5ec; border-color: var(--verde); }
+.aviso.revisar { background: #fdf4e3; border-color: var(--ambar); }
+.aviso.mal { background: #fbeceb; border-color: var(--rojo); }
+.aviso-tocable { width: calc(100% - 32px); margin: 12px 16px 0; text-align: left;
+                 font-family: var(--sans); font-size: 14.5px; cursor: pointer; }
+
+.tabla { width: 100%; border-collapse: collapse; font-size: 14px; }
+.tabla th {
+  text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--linea-fuerte);
+  font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--tinta-suave); font-weight: 600;
+  position: sticky; top: 0; background: var(--papel-alto);
+}
+.tabla td { padding: 7px 10px; border-bottom: 1px solid var(--linea); vertical-align: top; }
+.tabla tr:last-child td { border-bottom: 0; }
+.tabla .der { text-align: right; }
+.desliza { overflow-x: auto; }
+
+/* Punto de semaforo: el color nunca va solo, siempre con texto al lado. */
+.punto { display: inline-block; width: 9px; height: 9px; border-radius: 50%; }
+.punto.verde { background: var(--verde); }
+.punto.amarillo { background: var(--ambar); }
+.punto.rojo { background: var(--rojo); }
+
+.campo {
+  font-family: var(--mono); font-variant-numeric: tabular-nums;
+  width: 100%; max-width: 118px; min-height: 38px;
+  padding: 6px 8px; text-align: right;
+  border: 1px solid var(--linea-fuerte); border-radius: var(--radio);
+  background: var(--papel); color: var(--tinta); font-size: 15px;
+}
+.campo:focus { border-color: var(--verde); background: var(--papel-alto); }
+.campo.editado { border-color: var(--ambar); background: #fdf8ec; }
+
+.nota {
+  display: inline-block; background: var(--resaltador);
+  border-bottom: 1px solid #e8cf7a; padding: 1px 6px; border-radius: 2px;
+  font-size: 13.5px;
+}
+.crudo { font-family: var(--mono); font-size: 12.5px; color: var(--tinta-suave); }
+
+/* ---------- cosecha: el talonario para tildar ---------- */
+/* Esta es la pantalla que se mira de reojo, con el celular apoyado en un cajon
+   y las manos ocupadas. La cantidad manda; todo lo demas es secundario. */
+.grupo-titulo {
+  display: flex; align-items: center; gap: 12px;
+  margin: 26px 0 8px; padding-bottom: 6px;
+  border-bottom: 2px solid var(--tinta);
+}
+.grupo-titulo .rotulo { margin-left: auto; }
+
+.renglon {
+  display: grid;
+  grid-template-columns: var(--toque) 54px 62px 1fr;
+  align-items: center; gap: 10px;
+  padding: 9px 0;
+  background: var(--papel-alto);
+  cursor: pointer;
+}
+.renglon:has(input:checked) { background: #eef5ec; }
+.renglon:has(input:checked) .renglon-nombre { text-decoration: line-through; color: var(--tinta-suave); }
+
+.tilde {
+  width: 26px; height: 26px; margin: 0 auto;
+  accent-color: var(--verde); cursor: pointer;
+}
+.renglon-nombre { font-weight: 600; font-size: 15.5px; }
+.renglon:has(input:checked) .renglon-num,
+.renglon:has(input:checked) .renglon-uni { opacity: 0.45; }
+.renglon-pie { font-size: 12.5px; color: var(--tinta-suave); margin-top: 2px; }
+.renglon-num {
+  font-family: var(--mono); font-variant-numeric: tabular-nums;
+  font-size: 26px; font-weight: 600; letter-spacing: -0.02em; text-align: right;
+}
+.renglon-uni {
+  font-style: normal; font-family: var(--mono); font-size: 11.5px;
+  color: var(--tinta-suave); letter-spacing: 0.04em;
+}
+.renglon-cant { text-align: right; white-space: nowrap; }
+.renglon-cant b {
+  font-family: var(--mono); font-variant-numeric: tabular-nums;
+  font-size: 27px; font-weight: 600; letter-spacing: -0.02em;
+}
+.renglon-cant i { font-style: normal; font-family: var(--mono); font-size: 12px;
+                  color: var(--tinta-suave); letter-spacing: 0.06em; }
+.renglon-margen { font-family: var(--mono); font-size: 11.5px; color: var(--tinta-suave); }
+
+.controles { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.controles label { font-size: 14px; color: var(--tinta-suave); }
+.controles .alfinal { margin-left: auto; }
+.acciones-lote { display: flex; gap: 8px; flex-wrap: wrap; }
+.caja-tope h2 { margin-right: 4px; }
+.chico { width: 74px; max-width: 74px; text-align: center; }
+
+
+/* ---------- armado: el recorrido ---------- */
+/* La lista va en orden de entrega. El auto se carga al reves, asi que cada
+   punto lleva su numero de carga bien visible. */
+.recorrido { list-style: none; margin: 0; padding: 6px; }
+.recorrido li {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 12px; margin-bottom: 4px;
+  background: var(--papel); border: 1px solid var(--linea);
+  border-radius: var(--radio); cursor: grab;
+}
+.recorrido li:last-child { margin-bottom: 0; }
+.recorrido li.arrastrando { opacity: 0.4; border-style: dashed; }
+.recorrido li.encima { border-color: var(--verde); border-width: 2px; }
+.recorrido .agarre { color: var(--linea-fuerte); font-size: 18px; line-height: 1; cursor: grab; }
+.recorrido .nombre-punto { font-weight: 600; }
+.recorrido .cuenta { margin-left: auto; }
+.recorrido .moveres { display: flex; gap: 4px; }
+.recorrido .mover {
+  min-height: 34px; min-width: 34px; padding: 0 8px;
+  background: none; border: 1px solid var(--linea-fuerte); border-radius: var(--radio);
+  color: var(--tinta); cursor: pointer; font-size: 15px; line-height: 1;
+}
+.recorrido .mover:disabled { opacity: 0.3; cursor: not-allowed; }
+
+/* ---------- armado: la ficha de cada persona ---------- */
+.punto-titulo {
+  display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap;
+  margin: 26px 0 10px; padding-bottom: 7px; border-bottom: 2px solid var(--tinta);
+}
+.punto-titulo .carga {
+  font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--papel-alto);
+  background: var(--tinta); padding: 3px 8px; border-radius: var(--radio);
+}
+.punto-datos { font-size: 13px; color: var(--tinta-suave); margin: 0 0 12px; }
+
+.ficha { background: var(--papel-alto); border: 1px solid var(--linea);
+         border-radius: var(--radio); margin-bottom: 10px; break-inside: avoid; }
+.ficha.lista { border-color: var(--verde); background: #f4f8f2; }
+.ficha-tope {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px; border-bottom: 1px solid var(--linea);
+}
+.ficha-tope .quien { font-weight: 650; font-size: 16px; }
+.ficha-tope .tel { font-family: var(--mono); font-size: 12px; color: var(--tinta-suave); }
+.ficha-tope .plata { margin-left: auto; font-family: var(--mono);
+                     font-variant-numeric: tabular-nums; font-weight: 650; font-size: 16px; }
+.ficha-tope .plata small { display: block; font-size: 10px; letter-spacing: 0.1em;
+                           text-transform: uppercase; color: var(--ambar); font-weight: 400; }
+
+
+/* Cada item del paquete: tilde grande, nombre, y si se pesa, la balanza. */
+.item {
+  display: grid; grid-template-columns: 44px 1fr auto auto;
+  align-items: center; gap: 8px;
+  padding: 8px 14px 8px 4px; border-bottom: 1px solid var(--linea);
+}
+.item:last-child { border-bottom: 0; }
+.item:has(input.tilde:checked) .item-nombre { text-decoration: line-through; color: var(--tinta-suave); }
+.item-nombre { font-size: 15px; }
+.item-nombre b { font-family: var(--mono); font-variant-numeric: tabular-nums; font-weight: 650; }
+.item-precio { font-family: var(--mono); font-variant-numeric: tabular-nums;
+               text-align: right; white-space: nowrap; font-size: 15px; }
+.item-precio.estimado { color: var(--ambar); }
+
+/* La balanza: teclado numerico grande, para usar con las manos sucias. */
+.balanza { display: flex; align-items: center; gap: 5px; }
+.balanza label { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.1em;
+                 text-transform: uppercase; color: var(--tinta-suave); }
+.balanza input {
+  font-family: var(--mono); font-variant-numeric: tabular-nums;
+  width: 74px; min-height: 44px; padding: 6px 8px; text-align: right; font-size: 17px;
+  border: 1px solid var(--linea-fuerte); border-radius: var(--radio);
+  background: var(--papel); color: var(--tinta);
+}
+.balanza input:focus { border-color: var(--verde); background: var(--papel-alto); }
+.balanza input.cargado { border-color: var(--verde); background: #eef5ec; font-weight: 650; }
+.balanza .unidad-peso { font-family: var(--mono); font-size: 12px; color: var(--tinta-suave); }
+
+.totales-punto { background: var(--papel-alto); border: 1px dashed var(--linea-fuerte);
+                 border-radius: var(--radio); padding: 12px 14px; margin: 4px 0 8px; }
+.totales-punto h3 { font-size: 14px; margin-bottom: 8px; }
+.totales-lista { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 0; padding: 0; list-style: none; }
+.totales-lista li { font-size: 13.5px; }
+.totales-lista b { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+
+/* ---------- cobros ---------- */
+.pila-campos { display: grid; gap: 12px; }
+.campo-largo { display: grid; gap: 4px; }
+.campo-largo input {
+  min-height: 44px; padding: 8px 11px; font-size: 15px; font-family: var(--sans);
+  border: 1px solid var(--linea-fuerte); border-radius: var(--radio);
+  background: var(--papel); color: var(--tinta);
+}
+.campo-largo input:focus { border-color: var(--verde); background: var(--papel-alto); }
+
+details.caja > summary { cursor: pointer; list-style: none; }
+details.caja > summary::-webkit-details-marker { display: none; }
+details.caja > summary::after { content: "▾"; margin-left: auto; color: var(--tinta-suave); }
+details.caja[open] > summary::after { content: "▴"; }
+
+/* Los alias que faltan: se piden una vez y quedan guardados para siempre. */
+.alias-fila { display: grid; grid-template-columns: 1fr auto; align-items: center;
+              gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--linea); }
+.alias-fila:last-child { border-bottom: 0; }
+.alias-fila .de { font-size: 14.5px; }
+.alias-fila .de small { display: block; color: var(--tinta-suave); font-size: 12px; }
+.alias-fila input {
+  font-family: var(--mono); min-height: 44px; width: 140px; padding: 6px 10px; font-size: 15px;
+  border: 1px solid var(--linea-fuerte); border-radius: var(--radio);
+  background: var(--papel); color: var(--tinta);
+}
+.alias-fila input.guardado { border-color: var(--verde); background: #eef5ec; }
+.alias-fila input.choca { border-color: var(--ambar); background: #fdf8ec; }
+.caja.avisa > summary { background: #fdf4e3; }
+details.caja > summary { display: flex; align-items: center; gap: 4px 12px; flex-wrap: wrap; }
+details.caja > summary > .rotulo { flex: 1 1 100%; order: 2; }
+details.caja > summary::after { order: 1; }
+
+/* La cuenta, tal cual se va a pegar en WhatsApp. */
+.cuenta { background: var(--papel-alto); border: 1px solid var(--linea);
+          border-radius: var(--radio); margin-bottom: 12px; break-inside: avoid; }
+.cuenta.enviada { border-color: var(--verde); }
+.cuenta-tope { display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+               padding: 10px 14px; border-bottom: 1px solid var(--linea); }
+.cuenta-tope .quien { font-weight: 650; font-size: 16px; }
+.cuenta-tope .tel { font-family: var(--mono); font-size: 12px; color: var(--tinta-suave); }
+.cuenta-tope .plata { margin-left: auto; font-family: var(--mono);
+                      font-variant-numeric: tabular-nums; font-weight: 650; font-size: 17px; }
+.mensaje {
+  margin: 0; padding: 12px 14px; white-space: pre-wrap; word-break: break-word;
+  font-family: var(--mono); font-size: 13px; line-height: 1.55;
+  background: var(--papel); border-bottom: 1px solid var(--linea);
+}
+.acciones { display: flex; gap: 8px; padding: 10px 14px; flex-wrap: wrap; }
+.acciones .boton { flex: 1; min-width: 130px; padding: 0 14px; }
+.marca-estimado { color: var(--ambar); font-size: 12.5px; padding: 0 14px 10px; }
+
+
+/* ---------- quién me debe ---------- */
+.deudor { background: var(--papel-alto); border: 1px solid var(--linea);
+          border-radius: var(--radio); margin-bottom: 10px; }
+.deudor-tope { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 11px 14px; }
+.deudor-tope .quien { font-weight: 650; font-size: 16px; }
+.deudor-tope .tel { font-family: var(--mono); font-size: 12px; color: var(--tinta-suave); }
+.deudor-tope .debe { margin-left: auto; font-family: var(--mono);
+                     font-variant-numeric: tabular-nums; font-weight: 700; font-size: 18px; }
+.deudor-tope .debe.afavor { color: var(--verde); }
+.deudor-listas { border-top: 1px solid var(--linea); }
+.deudor-lista { display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+                padding: 9px 14px; border-bottom: 1px solid var(--linea); font-size: 14px; }
+.deudor-lista:last-child { border-bottom: 0; }
+.deudor-lista .monto { margin-left: auto; font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.estados { display: flex; gap: 4px; }
+.estados button {
+  min-height: 38px; padding: 0 11px; font-family: var(--mono); font-size: 11px;
+  letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer;
+  background: none; color: var(--tinta-suave);
+  border: 1px solid var(--linea-fuerte); border-radius: var(--radio);
+}
+.estados button[aria-pressed="true"] { background: var(--tinta); color: var(--papel-alto); border-color: var(--tinta); }
+.estados button[aria-pressed="true"][data-estado="pagada"] { background: var(--verde); border-color: var(--verde); }
+.vacio { text-align: center; padding: 34px 16px; color: var(--tinta-suave); }
+.vacio b { display: block; font-size: 17px; color: var(--tinta); margin-bottom: 5px; }
+
+
+
+/* ---------- la hoja: lo que se ve al entrar a cada pantalla ---------- */
+/* Una sola hoja por pantalla, con un botón. Los ajustes van plegados abajo,
+   porque se tocan una vez por temporada y no todos los días. */
+.hoja { background: var(--papel-alto); border: 1px solid var(--linea); border-radius: var(--radio); }
+.hoja-tope {
+  position: sticky; top: 96px; z-index: 10;
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 13px 16px; border-bottom: 1px solid var(--linea-fuerte);
+  background: var(--papel-alto); border-radius: var(--radio) var(--radio) 0 0;
+}
+.hoja-tope h2 { font-size: 19px; }
+.hoja-tope h2 { margin-right: auto; }
+.hoja-tope .rotulo { order: 3; flex: 1 1 100%; }
+.hoja-cuerpo { padding: 6px 0 14px; }
+
+/* El título de cada familia o de cada punto de retiro. */
+.familia {
+  display: flex; align-items: baseline; gap: 10px;
+  margin: 22px 16px 4px; padding-bottom: 5px;
+  font-size: 15px; letter-spacing: 0.03em; text-transform: uppercase;
+  border-bottom: 2px solid var(--tinta);
+}
+.hoja-cuerpo > .familia:first-child { margin-top: 10px; }
+.familia .carga {
+  margin-left: auto; font-family: var(--mono); font-size: 10.5px;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  background: var(--tinta); color: var(--papel-alto); padding: 3px 8px; border-radius: var(--radio);
+}
+.proveedor {
+  margin: 10px 16px 3px; font-family: var(--mono);
+  font-size: 11.5px; letter-spacing: 0.06em; color: var(--tinta-suave);
+}
+.renglon-extra { font-family: var(--mono); font-size: 12px; color: var(--tinta-suave); }
+.renglon-nota { margin: -2px 16px 6px 162px; font-size: 13px; }
+@media (max-width: 620px) { .renglon-nota { margin-left: 118px; } }
+.total-punto {
+  margin: 8px 16px 18px; padding: 9px 12px; font-size: 13px; color: var(--tinta-suave);
+  background: var(--papel); border: 1px dashed var(--linea-fuerte); border-radius: var(--radio);
+}
+
+/* Ajustes: plegados, discretos, siempre al final de la hoja. */
+.ajustes { border-top: 1px solid var(--linea); }
+.ajustes > summary {
+  padding: 12px 16px; cursor: pointer; list-style: none;
+  font-family: var(--mono); font-size: 11.5px; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--tinta-suave);
+}
+.ajustes > summary::-webkit-details-marker { display: none; }
+.ajustes > summary::before { content: "+ "; }
+.ajustes[open] > summary::before { content: "− "; }
+.ajustes > summary:hover { color: var(--tinta); }
+.ajustes-cuerpo {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 4px 16px 18px;
+}
+.ajustes-cuerpo.columna { display: grid; gap: 12px; }
+.ajustes-cuerpo label { font-size: 14px; color: var(--tinta-suave); }
+
+
+/* El número de orden de cada cuenta, para saber por dónde vas. */
+.cuenta-tope .nro { font-family: var(--mono); font-size: 11.5px; color: var(--tinta-suave); }
+.cuenta { margin: 0 16px 12px; }
+.ficha { margin: 0 16px 10px; }
+.renglon { margin: 0 16px; border-bottom: 1px solid var(--linea); }
+.renglon:last-of-type { border-bottom: 0; }
+.deudor-tope .debe { margin-left: auto; font-family: var(--mono);
+                     font-variant-numeric: tabular-nums; font-weight: 700; font-size: 18px; }
+.deudor-tope .debe.afavor { color: var(--verde); }
+
+
+/* ---------- balance: solo los totales, para el papel ---------- */
+/* No se muestra en pantalla: es una hoja aparte que se arma al pedir el PDF. */
+.hoja-balance { display: none; }
+.balance-encabezado {
+  display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap;
+  border-bottom: 2px solid var(--tinta); padding-bottom: 7px; margin-bottom: 14px;
+}
+.balance-encabezado h3 { font-size: 18px; }
+.balance-encabezado .rotulo { margin-left: auto; }
+.balance-punto {
+  margin: 16px 0 4px; font-family: var(--mono); font-size: 11.5px;
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--tinta-suave);
+  border-bottom: 1px solid var(--linea-fuerte); padding-bottom: 3px;
+}
+.balance-fila { display: flex; align-items: baseline; gap: 10px; padding: 4px 0; font-size: 14.5px; }
+.balance-fila .tel { font-family: var(--mono); font-size: 11.5px; color: var(--tinta-suave); }
+.balance-fila .monto {
+  margin-left: auto; font-family: var(--mono);
+  font-variant-numeric: tabular-nums; font-weight: 600;
+}
+.balance-fila.subtotal { border-top: 1px solid var(--linea); margin-top: 4px; padding-top: 6px; }
+.balance-fila.subtotal .quien { font-family: var(--mono); font-size: 11.5px; color: var(--tinta-suave); }
+.balance-total {
+  display: flex; align-items: baseline; gap: 12px;
+  margin-top: 18px; padding-top: 10px; border-top: 2px solid var(--tinta);
+}
+.balance-total b { font-size: 16px; }
+.balance-total .monto {
+  margin-left: auto; font-family: var(--mono); font-variant-numeric: tabular-nums;
+  font-size: 26px; font-weight: 700;
+}
+
+
+/* ---------- la cajita para copiar la cosecha ---------- */
+.copiadero { border-top: 1px solid var(--linea); background: var(--papel); }
+.copiadero-tope {
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 16px 8px;
+}
+.copiadero-tope .rotulo { margin-right: auto; }
+.copiadero pre {
+  margin: 0; padding: 0 16px 16px;
+  white-space: pre-wrap; word-break: break-word;
+  font-family: var(--mono); font-size: 13.5px; line-height: 1.6; color: var(--tinta);
+}
+
+/* ---------- celular ---------- */
+@media (max-width: 620px) {
+  main { padding: 14px 12px 72px; }
+  .tope-fila { padding: 9px 12px; }
+  .paso span { display: none; }        /* en el celular queda solo el numero */
+  .paso { min-height: 44px; }
+  .cifra b { font-size: 25px; }
+  .renglon { grid-template-columns: 44px 50px 56px 1fr; gap: 8px; }
+  .renglon-cant b { font-size: 24px; }
+  .soltar { padding: 32px 14px; }
+
+  /* Los nombres de los pueblos son largos: nombre arriba, cuenta abajo. */
+  .recorrido li {
+    display: grid; gap: 1px 10px; align-items: center;
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas: "agarre nombre moveres" "agarre cuenta moveres";
+  }
+  .recorrido .agarre { grid-area: agarre; }
+  .recorrido .nombre-punto { grid-area: nombre; }
+  .recorrido .cuenta { grid-area: cuenta; margin-left: 0; }
+  .recorrido .moveres { grid-area: moveres; }
+  .ficha-tope { flex-wrap: wrap; }
+  .ficha-tope .plata { font-size: 15px; }
+  .item { grid-template-columns: 40px 1fr auto auto; gap: 6px; padding-right: 10px; }
+  .balanza input { width: 64px; font-size: 16px; }
+  .item-precio { font-size: 14px; }
+
+
+  /* La tabla de precios no entra en 6 columnas: cada producto pasa a ser una
+     ficha con el precio a mano derecha, que es lo unico que se corrige aca. */
+  #tabla-precios thead { display: none; }
+  #tabla-precios tr {
+    display: grid; grid-template-columns: 1fr auto; gap: 2px 12px;
+    align-items: center; padding: 12px 0; border-bottom: 1px solid var(--linea);
+  }
+  #tabla-precios td { border: 0; padding: 0; }
+  #tabla-precios td[data-c="nombre"] { grid-column: 1; grid-row: 1; }
+  #tabla-precios td[data-c="precio"] { grid-column: 2; grid-row: 1; }
+  #tabla-precios td[data-c="unidad"] {
+    grid-column: 1; grid-row: 2;
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--tinta-suave);
+  }
+  #tabla-precios td[data-c="porkg"] { grid-column: 2; grid-row: 2; }
+  #tabla-precios td[data-c="porkg"]::before {
+    content: "por kg"; float: left; margin-right: 8px; line-height: 38px;
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--tinta-suave);
+  }
+  /* El origen y la cantidad de pedidos ya se ven en la pantalla de cosecha. */
+  #tabla-precios td[data-c="origen"], #tabla-precios td[data-c="pedidos"] { display: none; }
+  #tabla-precios .crudo { display: block; max-width: 100%; }
+
+}
+
+/* ---------- papel ---------- */
+@media print {
+  :root { --papel: #fff; --papel-alto: #fff; }
+  .tope, .pasos, .no-imprime, .boton { display: none !important; }
+  main { max-width: none; padding: 0; }
+  body { font-size: 11pt; }
+  .caja, .renglon { border-color: #999; break-inside: avoid; }
+  .grupo-titulo { break-after: avoid; }
+  .renglon { padding: 6px 4px; }
+  .hoja, .hoja-tope { border: 0; position: static; }
+  .hoja-cuerpo { padding: 0; }
+  .familia, .proveedor, .renglon, .cuenta, .ficha, .total-punto { margin-left: 0; margin-right: 0; }
+  .cuenta, .ficha { break-inside: avoid; }
+  .mensaje { background: none; border: 1px solid #bbb; }
+
+  /* En pantalla cada ítem es una fila para tildarlo y pesarlo; en papel se
+     corren todos en una línea por persona, así el recorrido entra en dos hojas
+     en vez de doce. */
+  body.imprimir-balance .hoja-cuerpo, body.imprimir-balance .hoja-tope { display: none !important; }
+  body.imprimir-balance .hoja-balance { display: block !important; padding: 0; }
+  .ficha { border: 0; border-bottom: 1px solid #ccc; border-radius: 0; margin-bottom: 0; }
+  .ficha-tope { border: 0; padding: 6px 0 2px; }
+  .ficha-tope .plata, .ficha-tope .plata small { display: none; }
+  .ficha .item {
+    display: inline; border: 0; padding: 0;
+    font-size: 11pt; line-height: 1.5;
+  }
+  .ficha .item::after { content: " · "; color: #888; }
+  .ficha .item:last-child::after { content: ""; }
+  .ficha .item > input.tilde, .ficha .item .balanza, .ficha .item .item-precio { display: none; }
+  .ficha .item > div { display: inline; }
+  .ficha .item-nombre { display: inline; }
+  .ficha .item-nombre b { font-weight: 650; }
+  .ficha .nota { display: inline; background: none; border: 0; font-style: italic; }
+
+  .punto-hoja { break-after: page; }
+  .punto-hoja:last-child { break-after: auto; }
+  .punto-titulo { break-after: avoid; }
+  .balanza input { border-bottom: 1px solid #333; }
+
+
+  .tilde { -webkit-appearance: none; appearance: none;
+           border: 1.5px solid #333; border-radius: 2px; width: 20px; height: 20px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
