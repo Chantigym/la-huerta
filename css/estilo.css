@@ -113,6 +113,8 @@ a.boton { text-decoration: none; }
 .boton:hover { background: #2c3a28; }
 .boton.fantasma { background: none; color: var(--tinta); border-color: var(--linea-fuerte); }
 .boton.fantasma:hover { background: #e7ebe3; }
+.boton.peligro { background: var(--rojo); border-color: var(--rojo); color: #fff; }
+.boton.peligro:hover { background: #84231c; }
 .boton:disabled { opacity: 0.4; cursor: not-allowed; }
 .boton.grande { width: 100%; }
 :focus-visible { outline: 3px solid var(--verde); outline-offset: 2px; }

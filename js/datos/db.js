@@ -72,6 +72,17 @@ export function leerArchivoActivo() {
   return leerConfig('archivoActivo');
 }
 
+/** Borra todos los datos locales conservando la estructura de IndexedDB. */
+export function borrarTodo() {
+  return abrir().then((db) => new Promise((resolver, rechazar) => {
+    const tx = db.transaction([AVANCE, CONFIG, LISTAS, PAGOS], 'readwrite');
+    for (const nombre of [AVANCE, CONFIG, LISTAS, PAGOS]) tx.objectStore(nombre).clear();
+    tx.oncomplete = () => resolver();
+    tx.onerror = () => rechazar(tx.error);
+    tx.onabort = () => rechazar(tx.error);
+  }));
+}
+
 /** Clave estable de un item dentro de una lista: no depende del orden de las filas. */
 export function claveItem(pedido, item) {
   return pedido.claveCliente + '#' + item.columnaIndice;

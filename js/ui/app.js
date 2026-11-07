@@ -17,7 +17,7 @@ import { quienMeDebe, resumenParaHistorial, ESTADOS } from '../core/cuentacorrie
 import { informesAXLSX } from '../datos/informes-xlsx.js';
 import { guardarAvance, leerAvance, guardarConfig, leerConfig, claveItem,
          guardarListaEnHistorial, leerHistorial, guardarPago, leerPagos,
-         exportarTodo, importarTodo, guardarArchivoActivo, leerArchivoActivo } from '../datos/db.js';
+         exportarTodo, importarTodo, borrarTodo, guardarArchivoActivo, leerArchivoActivo } from '../datos/db.js';
 
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => [...document.querySelectorAll(s)];
@@ -783,6 +783,22 @@ $('#btn-exportar').addEventListener('click', async () => {
       `lahuerta-respaldo-${new Date().toISOString().slice(0, 10)}.json`);
     decirRespaldo(`Bajado: ${todo.listas.length} listas, ${todo.pagos.length} pagos y tus alias.`);
   } catch (e) { decirRespaldo('No pude armar el respaldo: ' + e.message, 'mal'); }
+});
+
+$('#btn-borrar-todo').addEventListener('click', async (e) => {
+  const boton = e.currentTarget;
+  const confirmado = window.confirm(
+    '¿Borrar todos los datos guardados en este dispositivo? Se eliminarán listas, pagos, avances, preferencias y el último archivo cargado. Esta acción no se puede deshacer. Bajá el respaldo antes si querés conservarlos.'
+  );
+  if (!confirmado) return;
+  boton.disabled = true;
+  try {
+    await borrarTodo();
+    window.location.reload();
+  } catch (err) {
+    boton.disabled = false;
+    decirRespaldo('No pude borrar los datos: ' + err.message, 'mal');
+  }
 });
 
 $('#btn-importar').addEventListener('click', () => $('#archivo-respaldo').click());
