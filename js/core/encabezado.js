@@ -39,18 +39,19 @@ export function nombreSugerido(renglon) {
   let s = String(renglon || '');
   const normalizado = s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
   const nombres = [
-    [/condimento/, 'Condimentos 100gr'],
-    [/dulce\s+de\s+leche/, 'Dulce de leche frasco 360cc'],
-    [/flor(?:es)?\s+de\s+cartamo/, 'Flores de cartamo 100gr'],
-    [/harina\s+de\s+algarroba/, 'Harina de algarroba 500 gr'],
-    [/chucrut/, 'Chucrut 360 cc'],
-    [/ciruela.*umebosh/, 'Ciruelas umeboshis, arropes, frasco 250cc'],
-    [/arrope/, 'Ciruelas umeboshis, arropes, frasco 250cc'],
-    [/miel|conserva/, 'Miel y conservas frasco 360 cc'],
-    [/unguento/, 'Ungüento frasco 28 cc'],
-    [/queso.*horma/, 'Queso horma 1/2kg'],
-    [/sales?/, 'Sales 800gr'],
-    [/harina/, 'harina integral fina de trigo'],
+    [/^condimentos?\b/, 'Condimentos 100gr'],
+    [/^dulce\s+de\s+leche\b/, 'Dulce de leche frasco 360cc'],
+    [/^flor(?:es)?\s+de\s+cartamo\b/, 'Flores de cartamo 100gr'],
+    [/^harina\s+de\s+algarroba\b/, 'Harina de algarroba 500 gr'],
+    [/^harina\s+integral\s+fina\s+tradicional\b/, 'harina integral fina de trigo'],
+    [/^chucrut\b/, 'Chucrut 360 cc'],
+    [/^ciruelas?\s+umebosh/, 'Ciruelas umeboshis, arropes, frasco 250cc'],
+    [/^miel\b/, 'Miel y conservas frasco 360 cc'],
+    [/^conservas?\b/, 'Miel y conservas frasco 360 cc'],
+    [/^unguento\b/, 'Ungüento frasco 28 cc'],
+    [/^queso\b.*\bhorma\b/, 'Queso horma 1/2kg'],
+    [/^sales?\b/, 'Sales 800gr'],
+    [/^sal\b/, 'Sales 800gr'],
   ];
   const nombreFijo = nombres.find(([re]) => re.test(normalizado));
   if (nombreFijo) return nombreFijo[1];

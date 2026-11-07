@@ -25,11 +25,15 @@ function raiz(palabra) {
  * de venta de la columna, y recien si no aparece usamos la cantidad.
  */
 export function cantidadDeCosecha(texto, unidadCol, cantidad) {
-  const t = String(texto || '');
   if (!unidadCol) return cantidad;
-  const u = (unidadCol === 'c/u' ? 'unidad' : unidadCol).slice(0, 4).toLowerCase();
+  return cantidadConUnidad(texto, unidadCol) ?? cantidad;
+}
+
+function cantidadConUnidad(texto, unidadBuscada) {
+  const t = String(texto || '');
+  const u = (unidadBuscada === 'c/u' ? 'unidad' : unidadBuscada).slice(0, 4).toLowerCase();
   // Numero (o fraccion) seguido de una palabra. Nos quedamos con el primero
-  // cuya palabra sea la unidad de venta de la columna.
+  // cuya palabra sea la unidad buscada.
   const re = /(\d+)\s*\/\s*(\d+)\s*([a-záéíóúñ]+)|(\d+(?:[.,]\d+)?)\s*([a-záéíóúñ]+)/gi;
   let m;
   while ((m = re.exec(t)) !== null) {
@@ -38,7 +42,7 @@ export function cantidadDeCosecha(texto, unidadCol, cantidad) {
     if (m[1]) return parseInt(m[1], 10) / parseInt(m[2], 10);
     return parseFloat(String(m[4]).replace(',', '.'));
   }
-  return cantidad;
+  return null;
 }
 
 /**
@@ -48,19 +52,23 @@ export function cantidadDeCosecha(texto, unidadCol, cantidad) {
 export function leerCelda(texto, col) {
   const crudo = limpiar(texto);
   const vacio = { textoCrudo: '', vacia: true };
-  if (!crudo) return vacio;
+  if (!crudo || /^0(?:[.,]0+)?(?:\s*(?:kg|kgs|kilo|kilos|atado|planta|maple|frasco|paquete|bolsa|unidad|unidades))?$/i.test(crudo)) return vacio;
 
   const avisos = [];
   const precioFijado = leerPrecio(crudo);
 
   // Cantidad: el numero con el que arranca la celda. Si no arranca con numero
   // ("BOLSA 18 kg $29.800", "Maple $13.000") es un solo item de esa opcion.
-  const mCant = crudo.match(/^\s*(\d+(?:[.,]\d+)?)/);
-  const cantidad = mCant ? parseFloat(mCant[1].replace(',', '.')) : 1;
+  const mCant = crudo.match(/^\s*(\d+)\s*\/\s*(\d+)|^\s*(\d+(?:[.,]\d+)?)/);
+  const cantidadInicial = mCant
+    ? (mCant[1] ? parseInt(mCant[1], 10) / parseInt(mCant[2], 10) : parseFloat(mCant[3].replace(',', '.')))
+    : 1;
   const cantidadExplicita = Boolean(mCant);
 
   const u = detectarUnidad(crudo);
   const unidad = u ? u.clave : null;
+  // "BOLSA 18 kg" son 18 kg aunque la celda no empiece con un número.
+  const cantidad = (unidad && cantidadConUnidad(crudo, unidad)) ?? cantidadInicial;
 
   // Sobrante = lo que no es cantidad, unidad, precio, ruido comercial ni parte
   // del nombre del producto. Eso es la nota que escribio el cliente.
