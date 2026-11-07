@@ -17,7 +17,7 @@ import { quienMeDebe, resumenParaHistorial, ESTADOS } from '../core/cuentacorrie
 import { informesAXLSX } from '../datos/informes-xlsx.js';
 import { guardarAvance, leerAvance, guardarConfig, leerConfig, claveItem,
          guardarListaEnHistorial, leerHistorial, guardarPago, leerPagos,
-         exportarTodo, importarTodo } from '../datos/db.js';
+         exportarTodo, importarTodo, guardarArchivoActivo, leerArchivoActivo } from '../datos/db.js';
 
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => [...document.querySelectorAll(s)];
@@ -78,17 +78,21 @@ $('#archivo').addEventListener('change', (e) => { if (e.target.files[0]) cargar(
   zona.addEventListener(ev, (e) => { e.preventDefault(); zona.classList.remove('encima'); }));
 zona.addEventListener('drop', (e) => { const f = e.dataTransfer.files[0]; if (f) cargar(f); });
 
-async function cargar(archivo) {
+async function cargar(archivo, restaurada = false) {
   const aviso = $('#estado-carga');
   aviso.textContent = 'Leyendo ' + archivo.name + '…';
   try {
     const esCSV = /\.(csv|tsv|txt)$/i.test(archivo.name);
+    const contenido = esCSV ? await archivo.text() : await archivo.arrayBuffer();
     const { tabla, renglones, meta } = esCSV
-      ? leerCSV(await archivo.text())
-      : await leerPDF(await archivo.arrayBuffer());
+      ? leerCSV(contenido)
+      : await leerPDF(contenido);
 
     estado.lista = armarLista(tabla, renglones, archivo.name);
     estado.lista.meta = meta;
+    if (!restaurada) {
+      guardarArchivoActivo({ nombre: archivo.name, csv: esCSV, contenido }).catch(() => {});
+    }
     estado.tildes = new Set();
     estado.tildados = new Set();
     estado.pesos = new Map();
@@ -108,6 +112,19 @@ async function cargar(archivo) {
     aviso.append(crear('div', { className: 'aviso mal', textContent: 'No pude leer el archivo: ' + err.message }));
   }
 }
+
+// Al volver a abrir la app, recupera el mismo PDF/CSV. Elegir otro archivo lo reemplaza.
+async function restaurarArchivoActivo() {
+  try {
+    const guardado = await leerArchivoActivo();
+    if (!guardado) return;
+    const archivo = new File([guardado.contenido], guardado.nombre, {
+      type: guardado.csv ? 'text/csv' : 'application/pdf',
+    });
+    await cargar(archivo, true);
+  } catch { /* Si el navegador limpió el almacenamiento, se puede elegir otro archivo. */ }
+}
+restaurarArchivoActivo();
 
 // ---------- 2. revisar ----------
 function pintarRevision() {

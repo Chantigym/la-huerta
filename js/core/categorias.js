@@ -29,6 +29,7 @@ export function familiaDe(col) {
   const texto = sinAcentos(`${col.nombreCorto || ''} ${col.encabezadoCrudo || ''}`).toLowerCase();
 
   if (HUEVOS.test(texto)) return 'huevos';
+  if (/harina\s+(?:integral\s+fina\s+de\s+trigo|de\s+algarroba)/.test(texto)) return 'almacen';
   // Lo que viene en frasco ya está elaborado: chucrut, dulce, miel, encurtidos.
   if (col.unidad === 'frasco' || /conserva|encurtid|agridulce|en\s+salmuera/.test(texto)) return 'almacen';
   if (FRUTA.test(texto)) return 'fruta';

@@ -63,6 +63,15 @@ export function leerConfig(clave) {
   return transaccion(CONFIG, 'readonly', (s) => s.get(clave)).then((r) => (r ? r.valor : null));
 }
 
+/** Conserva el último archivo cargado para volver a abrirlo al iniciar la app. */
+export function guardarArchivoActivo(archivo) {
+  return guardarConfig('archivoActivo', archivo);
+}
+
+export function leerArchivoActivo() {
+  return leerConfig('archivoActivo');
+}
+
 /** Clave estable de un item dentro de una lista: no depende del orden de las filas. */
 export function claveItem(pedido, item) {
   return pedido.claveCliente + '#' + item.columnaIndice;

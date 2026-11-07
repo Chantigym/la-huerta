@@ -37,6 +37,23 @@ export function detectarUnidad(texto, desde = 0) {
 /** Nombre corto sugerido. Es solo una sugerencia: el alias real lo edita el usuario. */
 export function nombreSugerido(renglon) {
   let s = String(renglon || '');
+  const normalizado = s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  const nombres = [
+    [/condimento/, 'Condimentos 100gr'],
+    [/dulce\s+de\s+leche/, 'Dulce de leche frasco 360cc'],
+    [/flor(?:es)?\s+de\s+cartamo/, 'Flores de cartamo 100gr'],
+    [/harina\s+de\s+algarroba/, 'Harina de algarroba 500 gr'],
+    [/chucrut/, 'Chucrut 360 cc'],
+    [/ciruela.*umebosh/, 'Ciruelas umeboshis, arropes, frasco 250cc'],
+    [/arrope/, 'Ciruelas umeboshis, arropes, frasco 250cc'],
+    [/miel|conserva/, 'Miel y conservas frasco 360 cc'],
+    [/unguento/, 'Ungüento frasco 28 cc'],
+    [/queso.*horma/, 'Queso horma 1/2kg'],
+    [/sales?/, 'Sales 800gr'],
+    [/harina/, 'harina integral fina de trigo'],
+  ];
+  const nombreFijo = nombres.find(([re]) => re.test(normalizado));
+  if (nombreFijo) return nombreFijo[1];
   s = s.split('$')[0];                       // cortar antes del precio
   s = s.replace(/\([^)]*\)?/g, ' ');          // sacar parentesis y su contenido
   s = s.split(/[,.:;!]/)[0];                  // cortar en la primera puntuacion
